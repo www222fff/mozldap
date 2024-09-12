@@ -1,0 +1,36 @@
+cd config; make BUILD_DEBUG=full export
+make[1]: Entering directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/config'
+make[1]: Nothing to be done for `export'.
+make[1]: Leaving directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/config'
+cd ldap; make BUILD_DEBUG=full export
+make[1]: Entering directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/ldap'
+cd include; make BUILD_DEBUG=full export
+make[2]: Entering directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/ldap/include'
+../../config/./nsinstall -D ../../../../dist/public/ldap
+../../config/./nsinstall -D ../../../../dist/public/ldap-private
+../../config/./nsinstall -R  -m 644 ./disptmpl.h ./lber.h ./ldap.h ./ldap-extension.h ./ldap-platform.h ./ldap-to-be-deprecated.h ./ldap-deprecated.h ./ldap_ssl.h ./ldappr.h ./ldif.h ./iutil.h ./srchpref.h ../../../../dist/public/ldap
+../../config/./nsinstall -R  -m 644 ./../libraries/libldap/ldap-int.h ./../libraries/liblber/lber-int.h ./portable.h ./ldaprot.h ./ldaplog.h ../../../../dist/public/ldap-private
+make[2]: Leaving directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/ldap/include'
+cd libraries; make BUILD_DEBUG=full export
+make[2]: Entering directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/ldap/libraries'
+cd liblber; make BUILD_DEBUG=full export
+make[3]: Entering directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/ldap/libraries/liblber'
+../../../config/./nsinstall -R -m 444 ./liblber60.a ../../../../../dist/lib
+make[3]: Leaving directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/ldap/libraries/liblber'
+cd libldif; make BUILD_DEBUG=full export
+make[3]: Entering directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/ldap/libraries/libldif'
+../../../config/./nsinstall -R -m 444 ./libldif60.a ../../../../../dist/lib
+../../../config/./nsinstall -R -m 444 ./libldif60.a ../../../../../dist/lib
+../../../config/./nsinstall -R -m 444 ./libldif60.so ../../../../../dist/lib
+../../../config/./nsinstall -R -m 444 ./libldif60.so ../../../../../dist/bin
+make[3]: Leaving directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/ldap/libraries/libldif'
+cd libiutil; make BUILD_DEBUG=full export
+make[3]: Entering directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/ldap/libraries/libiutil'
+../../../config/./nsinstall -R -m 444 ./libiutil60.a ../../../../../dist/lib
+make[3]: Leaving directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/ldap/libraries/libiutil'
+cd libldap; make BUILD_DEBUG=full export
+make[3]: Entering directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/ldap/libraries/libldap'
+gcc -o abandon.o -c     -pipe -ansi -Wall -pthread -g -fno-inline -fPIC  -DDEBUG_jayarp  -DDEBUG=1 -DXP_UNIX=1 -D_POSIX_SOURCE=1 -D_BSD_SOURCE=1 -D_SVID_SOURCE=1 -D_LARGEFILE64_SOURCE=1 -DHAVE_FCNTL_FILE_LOCKING=1 -DLINUX=1 -Dlinux=1 -DHAVE_LCHOWN=1 -DHAVE_STRERROR=1 -DHAVE_GETADDRINFO=1 -DHAVE_GETNAMEINFO=1 -D_REENTRANT=1  -DFORCE_PR_LOG -D_PR_PTHREADS -UHAVE_CVAR_BUILT_ON_SEM -DUSE_WAITPID -DNEEDPROTOS -DLDAP_DEBUG  -DNET_SSL  -DNO_LIBLCACHE -DLDAP_REFERRALS     -DNS_DOMESTIC  -DLINUX2_0 -DLINUX1_2 -DLINUX2_1 -UMOZILLA_CLIENT -DUSE_PTHREADS -I../../../../../dist/public/ldap -I../../../ldap/include -I../../../../../dist/./public  abandon.c
+make[3]: Leaving directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/ldap/libraries/libldap'
+make[2]: Leaving directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/ldap/libraries'
+make[1]: Leaving directory `/home/jayarp/mozilla/mozldap-6.0.6/mozilla/directory/c-sdk/ldap'
