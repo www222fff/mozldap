@@ -36,7 +36,7 @@
 #define SIGMAX       SIGLOST
 #endif
 
-static bool          g_pstack = false;
+
 static int          g_pid = 0;
 static unsigned int g_count[SIGMAX];
 static char         g_command[1024];
@@ -99,144 +99,11 @@ void my_ber_callback(BerElement *ber, int is_request) {
     }
     else
     {
-
         sprintf( msg, "ldap resposne ber_dump: buf 0x%p, ptr 0x%p, rwptr 0x%p, end 0x%p\n",
 	    ber->ber_buf, ber->ber_ptr, ber->ber_rwptr, ber->ber_end );
         cout << msg << endl;
-        ber_print( ber->ber_ptr, ber->ber_end - ber->ber_ptr );
+        ber_print( ber->ber_ptr, ber->ber_end - ber->ber_ptr );  //for response need add prefix 30 len!!!
     }
-}
-
-/* Function definations */
-
-extern "C"
-{
-    void sighdl_handler(int p_signum)
-    {
-        // Read signal number
-        switch (p_signum)
-        {
-
-            //case SIGTRAP    :
-            case SIGABRT    :
-            case SIGBUS     :
-            case SIGSEGV    :
-                //case SIGILL     :
-                //case SIGXCPU    :
-                //case SIGXFSZ    :
-                //case SIGFPE     :
-                //case SIGSYS     :
-            {
-
-                char buff[300]={'P','c','d','i','e','d','\0'};
-                struct timeval curr_time = {};
-                gettimeofday(&curr_time, 0);
-                syslog(LOG_USER | LOG_ALERT, buff);
-
-                if (true == g_pstack)
-                {
-                    system(g_command);
-                }
-
-                signal(p_signum, SIG_DFL);//instead of kill, we will restore default handling for signal,
-                raise(p_signum);  //and reraise him again
-
-            }
-            break;
-
-            default :
-                syslog(LOG_USER | LOG_ALERT, "INVALID SIGNAL RECEIVED");
-                break;
-        }
-    }
-} //extern "C"
-
-bool signalhandler_init(std::string logical_name)
-{
-
-
-
-    int              ret = 0;
-    sigset_t         sig_set;
-    sigset_t         sig_set_orig;
-    sigset_t         sig_set_mask;
-    struct sigaction sig_action;
-    struct stat      stat_buf;
-
-    memset(&stat_buf, 0, sizeof(stat_buf));   // Initialize file status buffer
-
-    g_pid = getpid();                        // Get current pid
-
-
-    // Ensure that the pstack utility exists
-#ifdef __linux__
-    ret = stat("/usr/bin/gstack", &stat_buf);
-#else
-    ret = stat("/usr/bin/pstack", &stat_buf);
-#endif
-
-    if (0 != ret)
-    {
-        // pstack utility does not exist
-        cout<<"pstack/gstack utility not present at standard location /usr/bin";
-        return false;
-    }
-    else
-    {
-        // pstack exists
-        g_pstack = true; // Indicate pstack utility exists
-
-#ifdef __linux__
-        snprintf(g_command, sizeof(g_command), "%s %d > /TspCore/%s.%d.pstack",
-                 "/usr/bin/gstack", g_pid, logical_name.c_str(), g_pid);
-#else
-        snprintf(g_command, sizeof(g_command), "%s %d > /TspCore/%s.%d.pstack",
-                 "/usr/bin/pstack", g_pid, logical_name.c_str(), g_pid);
-#endif
-    }
-
-    // Block all possible signals while installing handlers
-    memset(&sig_action, 0, sizeof(sig_action)); // Initialize signal set
-    memset(&g_count, 0, sizeof(g_count));     // Initialize signal count
-
-    sigfillset(&sig_set);                     // Include all signals for blocking
-    sigemptyset(&sig_set_orig);               // Initialize sig set to contain original signal mask
-    pthread_sigmask(SIG_SETMASK, &sig_set, &sig_set_orig); // Block all signals
-
-    //Initialize mask of signal set to use
-    sigemptyset(&sig_set_mask);
-
-    //sigaddset(&sig_set_mask,SIGTRAP);
-    //sigaddset(&sig_set_mask,SIGILL);    // 4 - Illegal instruction.
-    sigaddset(&sig_set_mask, SIGABRT);  // 6 - Process abort signal.
-    sigaddset(&sig_set_mask, SIGBUS);   // 7 - Access to an undefined portion of a memory object
-    //sigaddset(&sig_set_mask,SIGFPE);    // 8 - Erroneous arithmetic operation.
-    sigaddset(&sig_set_mask, SIGSEGV);  // 11 - address not mapped to object
-    //sigaddset(&sig_set_mask,SIGXCPU);   // 24 - CPU time limit exceeded.
-    //sigaddset(&sig_set_mask,SIGXFSZ);   // 25 - File size limit exceeded.
-    //sigaddset(&sig_set_mask,SIGSYS);    // 31 - Bad system call.
-
-    // Install signal handler
-    sig_action.sa_flags = 0;               // No flags set
-    sigfillset(&sig_action.sa_mask);       // All set of signals to be blocked during execution of signal-catching function
-    sig_action.sa_handler = sighdl_handler; // Set signal handler
-
-    // Loop over all possible signals
-    for (int sig_no = 0; sig_no < SIGMAX; sig_no++)
-    {
-        // Install handler for each signal
-        if (sigismember(&sig_set_mask, sig_no))
-        {
-            // Add the signal handler
-            cout<<"Adding signal:" << sig_no << " to handler list";
-            sigaction(sig_no, &sig_action, NULL);
-        }
-    }
-
-    // Restore original mask
-    pthread_sigmask(SIG_SETMASK, &sig_set_orig, NULL);
-
-    return (true);
 }
 
 
@@ -284,76 +151,6 @@ tsd_setup()
     pthread_setspecific(key, tsd);
 }
 
-/* Function for setting an LDAP error. */
-static void
-set_ld_error(int err, char* matched, char* errmsg, void* dummy)
-{
-    struct ldap_error* le;
-    le = (ldap_error*)pthread_getspecific(key);
-    if (le == NULL)
-    {
-      return ;
-    }
-    le->le_errno = err;
-    if (le->le_matched != NULL)
-    {
-        ldap_memfree(le->le_matched);
-    }
-    le->le_matched = matched;
-    if (le->le_errmsg != NULL)
-    {
-        ldap_memfree(le->le_errmsg);
-    }
-    le->le_errmsg = errmsg;
-}
-
-/* Function for getting an LDAP error. */
-static int
-get_ld_error(char** matched, char** errmsg, void* dummy)
-{
-    cout<<"Here"<<__LINE__<<endl;
-    struct ldap_error* le;
-        cout<<"Here"<<__LINE__<<endl;
-
-    le = (ldap_error*)pthread_getspecific(key);
-        cout<<"Here"<<__LINE__<<endl;
-
-    if (le == NULL)
-    {
-        cout<<"Here"<<__LINE__<<endl;
-
-      return 1;
-    }
-    if (matched != NULL)
-    {
-        cout<<"Here"<<__LINE__<<endl;
-
-        *matched = le->le_matched;
-    }
-    if (errmsg != NULL)
-    {
-        cout<<"Here"<<__LINE__<<endl;
-
-        *errmsg = le->le_errmsg;
-    }
-        cout<<"Here"<<__LINE__<<endl;
-
-    return (le->le_errno);
-}
-
-/* Function for setting errno. */
-static void
-set_errno(int err)
-{
-    errno = err;
-}
-
-/* Function for getting errno. */
-static int
-get_errno(void)
-{
-    return (errno);
-}
 
 static void*
 search_thread(void* id)
@@ -389,13 +186,22 @@ search_thread(void* id)
                     if (0 != res)
                     {
                         msgid = ldap_msgid(res);
-                        cout << endl << "Response::(" << "msgId" << "," << msgid<< ")" << endl;
+                        cout << endl << "Above Response is for::(" << "msgId" << "," << msgid<< ")" << endl;
                         //ldap_msgfree(res);
                         //res = 0;
                     }
                     else
                     {
-                        cout << endl << "Response::(" << "msgId" << "," << msgid<< ")" << endl;
+                        cout << endl << "Above Response is for::(" << "msgId" << "," << msgid<< ")" << endl;
+                    }
+
+                    if(msgid % 2 == 0)   //simulate FF change testing, only print even msgid.
+                    {
+                        global_ber_callback = NULL;    
+                    }
+                    else
+                    {
+                        global_ber_callback = my_ber_callback;
                     }
                     break;
             }
@@ -412,9 +218,6 @@ int main()
     struct ldap_thread_fns  tfns;
     int rc;
 
-    global_ber_callback = my_ber_callback;
-
-    signalhandler_init("LdapClient");
     int    i , parse_rc, msgid, finished;
 
 
@@ -469,31 +272,6 @@ int main()
     }
 
 
-    /* Set the function pointers for dealing with mutexes
-     and error information. */
-    memset(&tfns, '\0', sizeof(struct ldap_thread_fns));
-    tfns.ltf_mutex_alloc = (void* (*)(void)) my_mutex_alloc;
-    tfns.ltf_mutex_free = (void (*)(void*)) my_mutex_free;
-    tfns.ltf_mutex_lock = (int (*)(void*)) pthread_mutex_lock;
-    tfns.ltf_mutex_unlock = (int (*)(void*)) pthread_mutex_unlock;
-    tfns.ltf_get_errno = get_errno;
-    tfns.ltf_set_errno = set_errno;
-    tfns.ltf_get_lderrno = get_ld_error;
-    tfns.ltf_set_lderrno = set_ld_error;
-    tfns.ltf_lderrno_arg = NULL;
-
-    /* Set up this session to use those function pointers. */
-    rc = ldap_set_option(ld, LDAP_OPT_THREAD_FN_PTRS, (void*) &tfns);
-    if (rc < 0)
-    {
-        fprintf(stderr, "ldap_set_option (LDAP_OPT_THREAD_FN_PTRS): %s\n", ldap_err2string(rc));
-        ldap_unbind(ld);
-        ld = 0;
-        exit(1);
-    }
-
-
-
     /* Attempt to bind to the server. */
     rc = ldap_simple_bind_s(ld, NAME, PASSWORD);
     if (rc != LDAP_SUCCESS)
@@ -534,28 +312,26 @@ int main()
     	    if(0 != ld)
     	    {
             
-            int rc = ldap_search_ext( ld, BASEDN, LDAP_SCOPE_BASE, FILTER, 0, 0, 0, 0, &t, LDAP_NO_LIMIT, &msgid);
-            if (rc != LDAP_SUCCESS)
-            {
-                cout<<"---FAILED --- in ldap_search_ext-----"<<endl<<std::flush;
-                //continue;
+                int rc = ldap_search_ext( ld, BASEDN, LDAP_SCOPE_BASE, FILTER, 0, 0, 0, 0, &t, LDAP_NO_LIMIT, &msgid);
+                if (rc != LDAP_SUCCESS)
+                {
+                    cout<<"---FAILED --- in ldap_search_ext-----"<<endl<<std::flush;
 
-            }
-            else
-            {
-                cout << endl << "Request::(" << "msgid" << "," << msgid << ")" << endl;
-            }
+                }
+                else
+                {
+                    cout << endl << "Above Request is for::(" << "msgid" << "," << msgid << ")" << endl;
+                }       
+
            }
            else
-           {
-           
-           exit(1);
-
+           {           
+                exit(1);
            }
-            sleep(2);
+
+           sleep(2);
         
-     }
-    
+     }  
     
 
 
