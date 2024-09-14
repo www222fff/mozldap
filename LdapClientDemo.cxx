@@ -107,34 +107,6 @@ void my_ber_callback(BerElement *ber, int is_request) {
 }
 
 
-/* Function for allocating a mutex. */
-static void*
-my_mutex_alloc(void)
-{
-    pthread_mutex_t*  mutexp;
-    if ((mutexp = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t))) != NULL)
-    {
-        pthread_mutex_init(mutexp, NULL);
-    }
-    return (mutexp);
-}
-
-/* Function for freeing a mutex. */
-static void
-my_mutex_free(void* mutexp)
-{
-    pthread_mutex_destroy((pthread_mutex_t*) mutexp);
-    free(mutexp);
-}
-
-
-/* Error structure. */
-struct ldap_error
-{
-    int  le_errno;
-    char*  le_matched;
-    char*  le_errmsg;
-};
 
 /* Function to set up thread-specific data. */
 static void
@@ -332,7 +304,6 @@ int main()
            sleep(2);
         
      }  
-    
 
 
     /* Wait until these threads exit. */
