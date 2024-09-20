@@ -609,7 +609,7 @@ read1msg( LDAP *ld, int msgid, int all, Sockbuf *sb, LDAPConn **lcp,
 
 	/* dannyaw */
 	if (global_ber_callback != NULL) {
-		global_ber_callback(ber, 0);
+		global_ber_callback(sb, ber, 0);
 	}
 
 	/* message id */

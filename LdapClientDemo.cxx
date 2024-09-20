@@ -21,6 +21,8 @@
 
 #include <lber.h> 
 #include "lber-int.h"
+#include "ldap-int.h"
+#include "ldappr-int.h"
 
 #include<map>
 /* Authentication and search information. */
@@ -87,8 +89,63 @@ void ber_print( char *data, int len )
     }
 }
 
-void my_ber_callback(BerElement *ber, int is_request) {	
+void get_socket_info(Sockbuf *sb) {
+
+    int ret;
+    PRLDAPIOSocketArg *sa;
+    PRNetAddr	iaddr;
+    struct lber_x_ext_io_fns    extiofns;
+    char name[256];
+
+    memset( &extiofns, 0, sizeof(extiofns));
+    extiofns.lbextiofn_size = LBER_X_EXTIO_FNS_SIZE;
+    if ( ber_sockbuf_get_option(sb, LBER_SOCKBUF_OPT_EXT_IO_FNS,
+        (void *)&extiofns ) < 0 ) {
+        std::cout << "dann1 error: " << std::endl;
+        return;
+    }
+
+    if ( NULL == extiofns.lbextiofn_socket_arg ) {
+        std::cout << "danny2 error1: " << std::endl;
+        return;
+    }
+
+    sa = extiofns.lbextiofn_socket_arg;
+
+    /*ret = prldap_socket_arg_from_ld( ld, &sa );
+    if (ret != LDAP_SUCCESS) {
+        return;
+    }*/
+
+    ret = PR_GetPeerName(sa->prsock_prfd, &iaddr);
+    if( ret == PR_FAILURE ) {
+        return;
+    }
+
+    ret = PR_NetAddrToString(&iaddr, name, sizeof(name));
+    if( ret == PR_FAILURE ) {
+        return;
+    }
+    std::cout << "dst name: " << name << " port " << iaddr.inet.port << std::endl;
+
+
+    ret = PR_GetSockName(sa->prsock_prfd, &iaddr);
+    if( ret == PR_FAILURE ) {
+        return;
+    }
+
+    ret = PR_NetAddrToString(&iaddr, name, sizeof(name));
+    if( ret == PR_FAILURE ) {
+        return;
+    }
+    std::cout << "src name: " << name << " port " << iaddr.inet.port << std::endl;
+}
+
+
+void my_ber_callback(Sockbuf *sb, BerElement *ber, int is_request) {
     char msg[128];
+
+    get_socket_info(sb);
 
     if (is_request == 1)
     {
@@ -107,6 +164,12 @@ void my_ber_callback(BerElement *ber, int is_request) {
 }
 
 
+struct ldap_error
+{
+    int  le_errno;
+    char*  le_matched;
+    char*  le_errmsg;
+};
 
 /* Function to set up thread-specific data. */
 static void
@@ -167,14 +230,6 @@ search_thread(void* id)
                         cout << endl << "Above Response is for::(" << "msgId" << "," << msgid<< ")" << endl;
                     }
 
-                    if(msgid % 2 == 0)   //simulate FF change testing, only print even msgid.
-                    {
-                        global_ber_callback = NULL;    
-                    }
-                    else
-                    {
-                        global_ber_callback = my_ber_callback;
-                    }
                     break;
             }
     }
@@ -192,6 +247,7 @@ int main()
 
     int    i , parse_rc, msgid, finished;
 
+    global_ber_callback = my_ber_callback;
 
     /* Create a key. */
     if (pthread_key_create(&key, free) != 0)
@@ -243,7 +299,9 @@ int main()
         ld = 0;
     }
 
-
+    /*int level = 0xFFFFF;
+    ldap_set_option(ld, LDAP_OPT_DEBUG_LEVEL, (void *) &level);*/
+  
     /* Attempt to bind to the server. */
     rc = ldap_simple_bind_s(ld, NAME, PASSWORD);
     if (rc != LDAP_SUCCESS)
@@ -251,6 +309,7 @@ int main()
         fprintf(stderr, "ldap_simple_bind_s: %s\n", ldap_err2string(rc));
         exit(1);
     }
+
 
     /* Initialize the attribute. */
     if (pthread_attr_init(&attr) != 0)

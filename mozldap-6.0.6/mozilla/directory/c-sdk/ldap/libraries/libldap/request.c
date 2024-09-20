@@ -47,7 +47,7 @@
 static char copyright[] = "@(#) Copyright (c) 1995 Regents of the University of Michigan.\nAll rights reserved.\n";
 #endif
 #endif
-
+#include <stdio.h>
 #include "ldap-int.h"
 
 static LDAPConn *find_connection( LDAP *ld, LDAPServer *srv, int any );
@@ -214,7 +214,6 @@ nsldapi_send_server_request(
 			free_servers( srvlist );
 		}
 	}
-
 
 	/*
      * return a fatal error if:
@@ -474,7 +473,7 @@ nsldapi_send_ber_message( LDAP *ld, Sockbuf *sb, BerElement *ber, int freeit,
 
             /* dannyaw */
             if (global_ber_callback != NULL) {
-                global_ber_callback(ber, 1);
+	            global_ber_callback(sb, ber, 1);
             }
 
 		} else {
