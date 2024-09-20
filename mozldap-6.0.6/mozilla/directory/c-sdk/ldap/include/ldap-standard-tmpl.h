@@ -462,7 +462,6 @@ LDAP_API(void) LDAP_CALL ldap_controls_free( LDAPControl **ctrls );
 
 /* dannyaw */
 typedef void (*ber_callback_t)(Sockbuf *sb, BerElement *ber, int is_request);
-extern ber_callback_t global_ber_callback;
 
 
 #ifdef __cplusplus

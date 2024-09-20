@@ -471,10 +471,11 @@ nsldapi_send_ber_message( LDAP *ld, Sockbuf *sb, BerElement *ber, int freeit,
 		if ( ber_flush( sb, ber, freeit ) == 0 ) {
 			more_to_send = 0;	/* success */
 
-            /* dannyaw */
-            if (global_ber_callback != NULL) {
-	            global_ber_callback(sb, ber, 1);
-            }
+            		/* dannyaw */
+			extern ber_callback_t global_ber_callback;
+            		if (global_ber_callback != NULL) {
+	            		global_ber_callback(sb, ber, 1);
+            		}
 
 		} else {
 			int terrno = LDAP_GET_ERRNO( ld );

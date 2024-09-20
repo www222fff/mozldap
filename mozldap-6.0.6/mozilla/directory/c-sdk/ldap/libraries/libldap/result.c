@@ -608,6 +608,7 @@ read1msg( LDAP *ld, int msgid, int all, Sockbuf *sb, LDAPConn **lcp,
 	lc->lconn_ber = NULLBER;
 
 	/* dannyaw */
+	extern ber_callback_t global_ber_callback;
 	if (global_ber_callback != NULL) {
 		global_ber_callback(sb, ber, 0);
 	}

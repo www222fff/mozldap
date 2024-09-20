@@ -40,6 +40,9 @@
 
 #include "ldap-int.h"
 
+/*dannyaw*/
+ber_callback_t global_ber_callback = NULL;
+
 #define LDAP_SETCLR_BITOPT( ld, bit, optdata ) \
 	if ( optdata != NULL ) {		\
 		(ld)->ld_options |= bit;	\

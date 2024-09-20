@@ -52,7 +52,7 @@ using namespace std;
 
 //dannyaw
 #define BPLEN	48
-ber_callback_t global_ber_callback = NULL;
+extern ber_callback_t global_ber_callback;
 
 void ber_print( char *data, int len )
 {
