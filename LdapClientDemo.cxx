@@ -23,6 +23,8 @@
 #include "lber-int.h"
 #include "ldap-int.h"
 #include "ldappr-int.h"
+#include "pprio.h"
+#include <sys/socket.h>
 
 #include<map>
 /* Authentication and search information. */
@@ -92,53 +94,48 @@ void ber_print( char *data, int len )
 void get_socket_info(Sockbuf *sb) {
 
     int ret;
-    PRLDAPIOSocketArg *sa;
-    PRNetAddr	iaddr;
     struct lber_x_ext_io_fns    extiofns;
     char name[256];
 
     memset( &extiofns, 0, sizeof(extiofns));
     extiofns.lbextiofn_size = LBER_X_EXTIO_FNS_SIZE;
-    if ( ber_sockbuf_get_option(sb, LBER_SOCKBUF_OPT_EXT_IO_FNS,
-        (void *)&extiofns ) < 0 ) {
-        std::cout << "dann1 error: " << std::endl;
+    if ( ber_sockbuf_get_option(sb, LBER_SOCKBUF_OPT_EXT_IO_FNS, (void *)&extiofns ) < 0 ) {
         return;
     }
 
     if ( NULL == extiofns.lbextiofn_socket_arg ) {
-        std::cout << "danny2 error1: " << std::endl;
         return;
     }
 
-    sa = extiofns.lbextiofn_socket_arg;
+    //PR_GetSockName PR_GetPeerName can only get ip, can not get port, so have to use getsocknamea and getpeername
+    PROsfd sockfd = PR_FileDesc2NativeHandle(extiofns.lbextiofn_socket_arg->prsock_prfd);
+    std::cout << "danny socket id is " << sockfd << std::endl;
 
-    /*ret = prldap_socket_arg_from_ld( ld, &sa );
-    if (ret != LDAP_SUCCESS) {
-        return;
-    }*/
+    struct sockaddr_in local_addr, remote_addr;
+    socklen_t addr_len = sizeof(struct sockaddr_in);
 
-    ret = PR_GetPeerName(sa->prsock_prfd, &iaddr);
-    if( ret == PR_FAILURE ) {
-        return;
-    }
-
-    ret = PR_NetAddrToString(&iaddr, name, sizeof(name));
-    if( ret == PR_FAILURE ) {
-        return;
-    }
-    std::cout << "dst name: " << name << " port " << iaddr.inet.port << std::endl;
-
-
-    ret = PR_GetSockName(sa->prsock_prfd, &iaddr);
-    if( ret == PR_FAILURE ) {
+    // Get local address
+    if (getsockname(sockfd, (struct sockaddr *)&local_addr, &addr_len) == -1) {
+        perror("getsockname failed");
         return;
     }
 
-    ret = PR_NetAddrToString(&iaddr, name, sizeof(name));
-    if( ret == PR_FAILURE ) {
+    // Get remote address
+    if (getpeername(sockfd, (struct sockaddr *)&remote_addr, &addr_len) == -1) {
+        perror("getpeername failed");
         return;
     }
-    std::cout << "src name: " << name << " port " << iaddr.inet.port << std::endl;
+
+    char local_ip[INET_ADDRSTRLEN];
+    char remote_ip[INET_ADDRSTRLEN];
+    
+    // Convert IP addresses to string
+    inet_ntop(AF_INET, &local_addr.sin_addr, local_ip, sizeof(local_ip));
+    inet_ntop(AF_INET, &remote_addr.sin_addr, remote_ip, sizeof(remote_ip));
+
+    cout << "Local IP: " << local_ip << ":" << ntohs(local_addr.sin_port) << endl;
+    cout << "Rmote IP: " << remote_ip << ":" << ntohs(remote_addr.sin_port) << endl;
+
 }
 
 
