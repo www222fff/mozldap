@@ -40,9 +40,6 @@
 
 #include "ldap-int.h"
 
-/*dannyaw*/
-ber_callback_t global_ber_callback = NULL;
-
 #define LDAP_SETCLR_BITOPT( ld, bit, optdata ) \
 	if ( optdata != NULL ) {		\
 		(ld)->ld_options |= bit;	\
@@ -187,6 +184,11 @@ ldap_set_option( LDAP *ld, int option, const void *optdata )
 		break;
 	case LDAP_OPT_REBIND_ARG:
 		ld->ld_rebind_arg = (void *) optdata;
+		break;
+
+	/*dannyaw*/
+	case LDAP_OPT_DUMP_BER_FN: 
+		ld->ld_dumpber_callback = (LDAP_DUMP_BER_CALLBACK *) optdata;
 		break;
 
 	/* i/o function pointers */
@@ -339,6 +341,7 @@ ldap_set_option( LDAP *ld, int option, const void *optdata )
 	case LDAP_X_OPT_CONNECT_TIMEOUT:
 		ld->ld_connect_timeout = *((int *) optdata);
 		break;
+
 
 #ifdef LDAP_SASLIO_HOOKS
 	/* SASL options */

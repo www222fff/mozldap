@@ -18,12 +18,13 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <syslog.h>
-
 #include <lber.h> 
 #include "lber-int.h"
 #include "ldap-int.h"
 #include "ldappr-int.h"
 #include "pprio.h"
+
+
 #include <sys/socket.h>
 
 #include<map>
@@ -54,7 +55,6 @@ using namespace std;
 
 //dannyaw
 #define BPLEN	48
-extern ber_callback_t global_ber_callback;
 
 void ber_print( char *data, int len )
 {
@@ -244,8 +244,6 @@ int main()
 
     int    i , parse_rc, msgid, finished;
 
-    global_ber_callback = my_ber_callback;
-
     /* Create a key. */
     if (pthread_key_create(&key, free) != 0)
     {
@@ -292,6 +290,14 @@ int main()
     {
         rc = ldap_get_lderrno(ld, NULL, NULL);
         fprintf(stderr, "ldap_set_option: %s\n", ldap_err2string(rc));
+        ldap_unbind(ld);
+        ld = 0;
+    }
+
+    if (ldap_set_option(ld, LDAP_OPT_DUMP_BER_FN, (void*)my_ber_callback) != LDAP_SUCCESS)
+    {
+        rc = ldap_get_lderrno(ld, NULL, NULL);
+        cout << "danny error" << ldap_err2string(rc) << endl;;
         ldap_unbind(ld);
         ld = 0;
     }

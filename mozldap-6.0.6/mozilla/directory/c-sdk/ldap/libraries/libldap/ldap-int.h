@@ -320,6 +320,8 @@ struct ldap {
 	NSLDAPIIOStatus	*ld_iostatus;	/* status info. about network sockets */
 	LDAP_REBINDPROC_CALLBACK *ld_rebind_fn;
 	void		*ld_rebind_arg;
+	
+	LDAP_DUMP_BER_CALLBACK *ld_dumpber_callback;  /* dannyaw */
 
 	/* function pointers, etc. for extended I/O */
 	struct ldap_x_ext_io_fns ld_ext_io_fns;
