@@ -54,7 +54,7 @@ pthread_mutex_t g_mutex = PTHREAD_MUTEX_INITIALIZER;
 using namespace std;
 
 //dannyaw
-#define BPLEN	48
+#define BPLEN	48  //max print chars per line!
 
 void ber_print( char *data, int len )
 {
@@ -153,10 +153,12 @@ void my_ber_callback(Sockbuf *sb, BerElement *ber, int is_request) {
     }
     else
     {
-        sprintf( msg, "ldap resposne ber_dump: buf 0x%p, ptr 0x%p, rwptr 0x%p, end 0x%p\n",
-	    ber->ber_buf, ber->ber_ptr, ber->ber_rwptr, ber->ber_end );
+        sprintf( msg, "ldap resposne ber_dump: buf 0x%p, ptr 0x%p, rwptr 0x%p, end 0x%p, tag 0x%x, len 0x%x\n",
+	    ber->ber_buf, ber->ber_ptr, ber->ber_rwptr, ber->ber_end, ber->ber_tag, ber->ber_len);
         cout << msg << endl;
-        ber_print( ber->ber_ptr, ber->ber_end - ber->ber_ptr );  //for response need add prefix 30 len!!!
+        ber_print( &ber->ber_tag_contents[0], ber->ber_struct[BER_STRUCT_TAG].ldapiov_len ); 
+        ber_print( &ber->ber_len_contents[0], ber->ber_struct[BER_STRUCT_LEN].ldapiov_len ); 
+        ber_print( ber->ber_buf, ber->ber_end - ber->ber_buf ); 
     }
 }
 
