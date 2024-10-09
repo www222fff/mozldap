@@ -608,8 +608,8 @@ read1msg( LDAP *ld, int msgid, int all, Sockbuf *sb, LDAPConn **lcp,
 	lc->lconn_ber = NULLBER;
 
 	/* dannyaw */        	
-	if (NULL != ld->ld_dumpber_callback) {
-		(*ld->ld_dumpber_callback)(sb, ber, 0);
+	if ( NULL != ld->ld_dumpber_callback ) {
+		(*ld->ld_dumpber_callback)( sb, ber, 0 );
 	}
 
 	/* message id */

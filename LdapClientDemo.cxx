@@ -42,15 +42,8 @@
 #endif
 
 
-static int          g_pid = 0;
-static unsigned int g_count[SIGMAX];
-static char         g_command[1024];
-
 LDAP*    ld;
-
 pthread_key_t  key;
-pthread_mutex_t g_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 using namespace std;
 
 //dannyaw
@@ -109,7 +102,7 @@ void get_socket_info(Sockbuf *sb) {
 
     //PR_GetSockName PR_GetPeerName can only get ip, can not get port, so have to use getsocknamea and getpeername
     PROsfd sockfd = PR_FileDesc2NativeHandle(extiofns.lbextiofn_socket_arg->prsock_prfd);
-    std::cout << "danny socket id is " << sockfd << std::endl;
+    std::cout << "socket id is " << sockfd << std::endl;
 
     struct sockaddr_in local_addr, remote_addr;
     socklen_t addr_len = sizeof(struct sockaddr_in);
@@ -141,25 +134,29 @@ void get_socket_info(Sockbuf *sb) {
 
 void my_ber_callback(Sockbuf *sb, BerElement *ber, int is_request) {
     char msg[128];
-
-    get_socket_info(sb);
-
     if (is_request == 1)
     {
-        sprintf( msg, "ldap request ber_dump: buf 0x%p, ptr 0x%p, rwptr 0x%p, end 0x%p\n",
+        sprintf( msg, "<---------ldap request ber_dump: buf 0x%p, ptr 0x%p, rwptr 0x%p, end 0x%p\n",
 	    ber->ber_buf, ber->ber_ptr, ber->ber_rwptr, ber->ber_end );
         cout << msg << endl;
         ber_print( ber->ber_buf, ber->ber_ptr - ber->ber_buf );
     }
     else
     {
-        sprintf( msg, "ldap resposne ber_dump: buf 0x%p, ptr 0x%p, rwptr 0x%p, end 0x%p, tag 0x%x, len 0x%x\n",
+        sprintf( msg, "--------->ldap resposne ber_dump: buf 0x%p, ptr 0x%p, rwptr 0x%p, end 0x%p, tag 0x%x, len 0x%x\n",
 	    ber->ber_buf, ber->ber_ptr, ber->ber_rwptr, ber->ber_end, ber->ber_tag, ber->ber_len);
         cout << msg << endl;
-        ber_print( &ber->ber_tag_contents[0], ber->ber_struct[BER_STRUCT_TAG].ldapiov_len ); 
-        ber_print( &ber->ber_len_contents[0], ber->ber_struct[BER_STRUCT_LEN].ldapiov_len ); 
-        ber_print( ber->ber_buf, ber->ber_end - ber->ber_buf ); 
+
+        //add tag and len for response
+        string tag_data(reinterpret_cast<char*>(&ber->ber_tag_contents[0]), ber->ber_struct[BER_STRUCT_TAG].ldapiov_len);
+        string len_data(reinterpret_cast<char*>(&ber->ber_len_contents[0]), ber->ber_struct[BER_STRUCT_LEN].ldapiov_len);
+        string ber_data(reinterpret_cast<char*>(ber->ber_buf), ber->ber_end - ber->ber_buf);
+        string combined_data = tag_data + len_data + ber_data;
+
+        ber_print(const_cast<char*>(combined_data.c_str()), combined_data.length());
     }
+
+    get_socket_info(sb);
 }
 
 
