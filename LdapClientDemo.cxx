@@ -18,8 +18,8 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <syslog.h>
-#include <lber.h> 
-#include "lber-int.h"
+
+#include <lber.h>
 #include "ldap-int.h"
 #include "ldappr-int.h"
 #include "pprio.h"
@@ -214,18 +214,15 @@ search_thread(void* id)
                     break;
              
                 default:
-                    if (0 != res)
+                    msgid = ldap_msgid(res);
+                    while (res != NULL)
                     {
-                        msgid = ldap_msgid(res);
-                        cout << endl << "Above Response is for::(" << "msgId" << "," << msgid<< ")" << endl;
-                        //ldap_msgfree(res);
-                        //res = 0;
+                        cout << "danny:ldap result begin" << endl;
+                        ber_print( res->lm_ber->ber_buf, res->lm_ber->ber_end - res->lm_ber->ber_buf );
+                        cout << "danny:ldap result end" << endl;
+                        res = ldap_next_message(ld, res);
                     }
-                    else
-                    {
-                        cout << endl << "Above Response is for::(" << "msgId" << "," << msgid<< ")" << endl;
-                    }
-
+                    cout << endl << "Above Response is for::(" << "msgId" << "," << msgid<< ")" << endl;
                     break;
             }
     }
@@ -353,6 +350,21 @@ int main()
                 }
                 else
                 {
+                    LDAPRequest	*lr;
+                    for ( lr = ld->ld_requests; lr != NULL; lr = lr->lr_next ) {
+                        if ( msgid == lr->lr_msgid ) {
+                            break;
+                        }
+                    }
+                    if ( lr != NULL ) {
+                        cout << "danny:ldap search begin" << endl;
+                        char msg[128];
+                        sprintf( msg, "ldap search ber: buf 0x%p, ptr 0x%p, rwptr 0x%p, end 0x%p\n",
+                        lr->lr_ber->ber_buf, lr->lr_ber->ber_ptr, lr->lr_ber->ber_rwptr, lr->lr_ber->ber_end );
+                        cout << msg << endl;
+                        ber_print( lr->lr_ber->ber_buf, lr->lr_ber->ber_end - lr->lr_ber->ber_buf );
+                        cout << "danny:ldap search end" << endl;
+                    }
                     cout << endl << "Above Request is for::(" << "msgid" << "," << msgid << ")" << endl;
                 }       
 
