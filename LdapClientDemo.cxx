@@ -2,8 +2,6 @@
 #include <malloc.h>
 #include <errno.h>
 #include <pthread.h>
-#include <ldap.h>
-#include <ldappr.h>
 #include<string.h>
 #include<iostream>
 #include<stdlib.h>
@@ -19,11 +17,11 @@
 #include <sys/resource.h>
 #include <syslog.h>
 
-#include <lber.h>
-#include "ldap-int.h"
+#include <ldap.h>
+#include <ldappr.h>
+#include <pprio.h>
+#include "lber-int.h"
 #include "ldappr-int.h"
-#include "pprio.h"
-
 
 #include <sys/socket.h>
 
@@ -86,21 +84,13 @@ void ber_print( char *data, int len )
 
 void get_socket_info(Sockbuf *sb) {
 
-    int ret;
     struct lber_x_ext_io_fns    extiofns;
-    char name[256];
-
     memset( &extiofns, 0, sizeof(extiofns));
     extiofns.lbextiofn_size = LBER_X_EXTIO_FNS_SIZE;
-    if ( ber_sockbuf_get_option(sb, LBER_SOCKBUF_OPT_EXT_IO_FNS, (void *)&extiofns ) < 0 ) {
+    if ( ber_sockbuf_get_option(sb, LBER_SOCKBUF_OPT_EXT_IO_FNS, (void *)&extiofns ) < 0 || NULL == extiofns.lbextiofn_socket_arg) {
         return;
     }
 
-    if ( NULL == extiofns.lbextiofn_socket_arg ) {
-        return;
-    }
-
-    //PR_GetSockName PR_GetPeerName can only get ip, can not get port, so have to use getsocknamea and getpeername
     PROsfd sockfd = PR_FileDesc2NativeHandle(extiofns.lbextiofn_socket_arg->prsock_prfd);
     std::cout << "socket id is " << sockfd << std::endl;
 
@@ -215,14 +205,14 @@ search_thread(void* id)
              
                 default:
                     msgid = ldap_msgid(res);
-                    while (res != NULL)
+                    /*while (res != NULL)
                     {
                         cout << "danny:ldap result begin" << endl;
                         ber_print( res->lm_ber->ber_buf, res->lm_ber->ber_end - res->lm_ber->ber_buf );
                         cout << "danny:ldap result end" << endl;
                         res = ldap_next_message(ld, res);
                     }
-                    cout << endl << "Above Response is for::(" << "msgId" << "," << msgid<< ")" << endl;
+                    cout << endl << "Above Response is for::(" << "msgId" << "," << msgid<< ")" << endl;*/
                     break;
             }
     }
@@ -350,7 +340,7 @@ int main()
                 }
                 else
                 {
-                    LDAPRequest	*lr;
+                    /*LDAPRequest	*lr;
                     for ( lr = ld->ld_requests; lr != NULL; lr = lr->lr_next ) {
                         if ( msgid == lr->lr_msgid ) {
                             break;
@@ -364,7 +354,7 @@ int main()
                         cout << msg << endl;
                         ber_print( lr->lr_ber->ber_buf, lr->lr_ber->ber_end - lr->lr_ber->ber_buf );
                         cout << "danny:ldap search end" << endl;
-                    }
+                    }*/
                     cout << endl << "Above Request is for::(" << "msgid" << "," << msgid << ")" << endl;
                 }       
 
