@@ -20,8 +20,6 @@
 #include <ldap.h>
 #include <ldappr.h>
 #include <pprio.h>
-#include "lber-int.h"
-#include "ldappr-int.h"
 
 #include <sys/socket.h>
 
@@ -39,6 +37,7 @@
 #define SIGMAX       SIGLOST
 #endif
 
+extern "C" void my_ber_callback(Sockbuf *sb, BerElement *ber, int is_request);
 
 LDAP*    ld;
 pthread_key_t  key;
@@ -82,7 +81,7 @@ void ber_print( char *data, int len )
     }
 }
 
-void get_socket_info(Sockbuf *sb) {
+void get_socket_info(Sockbuf* sb) {
 
     struct lber_x_ext_io_fns    extiofns;
     memset( &extiofns, 0, sizeof(extiofns));
