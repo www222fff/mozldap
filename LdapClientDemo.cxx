@@ -37,13 +37,20 @@
 #define SIGMAX       SIGLOST
 #endif
 
-extern "C" void my_ber_callback(Sockbuf *sb, BerElement *ber, int is_request);
+//dannyaw
+extern "C" void ldap_tapping_callback(Sockbuf *sb, char *ber, int ber_len, int is_request, char* len_content, int len_content_len);
 
 LDAP*    ld;
 pthread_key_t  key;
 using namespace std;
 
-//dannyaw
+
+typedef struct lextiof_socket_private {
+	PRFileDesc	*prsock_prfd;		/* associated NSPR file desc. */
+	int		prsock_io_max_timeout;	/* in milliseconds */
+	void		*prsock_appdata;	/* application specific data */
+} PRLDAPIOSocketArg;
+
 #define BPLEN	48  //max print chars per line!
 
 void ber_print( char *data, int len )
@@ -121,54 +128,27 @@ void get_socket_info(Sockbuf* sb) {
 }
 
 
-void my_ber_callback(Sockbuf *sb, BerElement *ber, int is_request) {
+void ldap_tapping_callback(Sockbuf *sb, char *ber, int ber_len, int is_request, char* len_content, int len_content_len) {
     char msg[128];
     if (is_request == 1)
     {
-        sprintf( msg, "<---------ldap request ber_dump: buf 0x%p, ptr 0x%p, rwptr 0x%p, end 0x%p\n",
-	    ber->ber_buf, ber->ber_ptr, ber->ber_rwptr, ber->ber_end );
-        cout << msg << endl;
-        ber_print( ber->ber_buf, ber->ber_ptr - ber->ber_buf );
+        cout << endl << "Request is --------------->" <<  endl;
+        ber_print( ber, ber_len);
     }
     else
     {
-        sprintf( msg, "--------->ldap resposne ber_dump: buf 0x%p, ptr 0x%p, rwptr 0x%p, end 0x%p, tag 0x%x, len 0x%x\n",
-	    ber->ber_buf, ber->ber_ptr, ber->ber_rwptr, ber->ber_end, ber->ber_tag, ber->ber_len);
-        cout << msg << endl;
-
+        cout << endl << "Response is <---------------" <<  endl;
         //add tag and len for response
-        string tag_data(reinterpret_cast<char*>(&ber->ber_tag_contents[0]), ber->ber_struct[BER_STRUCT_TAG].ldapiov_len);
-        string len_data(reinterpret_cast<char*>(&ber->ber_len_contents[0]), ber->ber_struct[BER_STRUCT_LEN].ldapiov_len);
-        string ber_data(reinterpret_cast<char*>(ber->ber_buf), ber->ber_end - ber->ber_buf);
+        char tag = 0x30;
+        string tag_data(1, tag);
+        string len_data(len_content, len_content_len);
+        string ber_data(ber, ber_len);
         string combined_data = tag_data + len_data + ber_data;
 
         ber_print(const_cast<char*>(combined_data.c_str()), combined_data.length());
     }
 
     get_socket_info(sb);
-}
-
-
-struct ldap_error
-{
-    int  le_errno;
-    char*  le_matched;
-    char*  le_errmsg;
-};
-
-/* Function to set up thread-specific data. */
-static void
-tsd_setup()
-{
-    void*  tsd;
-    tsd = pthread_getspecific(key);
-    if (tsd != NULL)
-    {
-        fprintf(stderr, "tsd non-null!\n");
-        pthread_exit(NULL);
-    }
-    tsd = (void*) calloc(1, sizeof(struct ldap_error));
-    pthread_setspecific(key, tsd);
 }
 
 
@@ -182,7 +162,6 @@ search_thread(void* id)
 
     printf("Starting search_thread %c.\n", *(char*)id);
     free(id);
-    tsd_setup();
 
     for (;;)
     {
@@ -210,8 +189,8 @@ search_thread(void* id)
                         ber_print( res->lm_ber->ber_buf, res->lm_ber->ber_end - res->lm_ber->ber_buf );
                         cout << "danny:ldap result end" << endl;
                         res = ldap_next_message(ld, res);
-                    }
-                    cout << endl << "Above Response is for::(" << "msgId" << "," << msgid<< ")" << endl;*/
+                    }*/
+                    
                     break;
             }
     }
@@ -234,7 +213,6 @@ int main()
     {
         perror("pthread_key_create");
     }
-    tsd_setup();
 
     /* Initialize the LDAP session. */
     if ((ld = prldap_init("127.0.0.1", 16611,1)) == NULL)
@@ -279,7 +257,7 @@ int main()
         ld = 0;
     }
 
-    if (ldap_set_option(ld, LDAP_OPT_DUMP_BER_FN, (void*)my_ber_callback) != LDAP_SUCCESS)
+    if (ldap_set_option(ld, LDAP_OPT_DUMP_BER_FN, (void*)ldap_tapping_callback) != LDAP_SUCCESS)
     {
         rc = ldap_get_lderrno(ld, NULL, NULL);
         cout << "danny error" << ldap_err2string(rc) << endl;;
@@ -353,8 +331,7 @@ int main()
                         cout << msg << endl;
                         ber_print( lr->lr_ber->ber_buf, lr->lr_ber->ber_end - lr->lr_ber->ber_buf );
                         cout << "danny:ldap search end" << endl;
-                    }*/
-                    cout << endl << "Above Request is for::(" << "msgid" << "," << msgid << ")" << endl;
+                    }*/                    
                 }       
 
            }

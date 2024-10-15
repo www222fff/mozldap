@@ -163,21 +163,6 @@ typedef struct prldap_session_info {
 } PRLDAPSessionInfo;
 #define PRLDAP_SESSIONINFO_SIZE	sizeof( PRLDAPSessionInfo )
 
-/*dannyaw*/
-/* data structure that populates the I/O callback session arg. */
-typedef struct lextiof_session_private {
-	PRPollDesc	*prsess_pollds;		/* for poll callback */
-	int		prsess_pollds_count;	/* # of elements in pollds */
-	int		prsess_io_max_timeout;	/* in milliseconds */
-	void		*prsess_appdata;	/* application specific data */
-} PRLDAPIOSessionArg;
-
-/* data structure that populates the I/O callback socket-specific arg. */
-typedef struct lextiof_socket_private {
-	PRFileDesc	*prsock_prfd;		/* associated NSPR file desc. */
-	int		prsock_io_max_timeout;	/* in milliseconds */
-	void		*prsock_appdata;	/* application specific data */
-} PRLDAPIOSocketArg;
 
 /*
  * Function: prldap_set_session_info().

@@ -377,7 +377,7 @@ LDAP_API(void) LDAP_CALL ldap_set_rebind_proc( LDAP *ld,
 /*
  * ber callback function (an API extension)
  */     
-typedef void (LDAP_CALL LDAP_CALLBACK LDAP_DUMP_BER_CALLBACK)(Sockbuf *sb, BerElement *ber, int is_request); /* dannyaw */
+typedef void (LDAP_CALL LDAP_CALLBACK LDAP_DUMP_BER_CALLBACK)(Sockbuf *sb, char *ber, int ber_len, int is_request, char* len_content, int len_content_len); /* dannyaw */
 /*
  * Thread function callbacks (an API extension --
  * LDAP_API_FEATURE_X_THREAD_FUNCTIONS).
