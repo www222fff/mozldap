@@ -132,12 +132,12 @@ void ldap_tapping_callback(Sockbuf *sb, char *ber, int ber_len, int is_request, 
     char msg[128];
     if (is_request == 1)
     {
-        cout << endl << "Request is --------------->" <<  endl;
+        cout << endl << "Request sent --------------->" <<  endl;
         ber_print( ber, ber_len);
     }
     else
     {
-        cout << endl << "Response is <---------------" <<  endl;
+        cout << endl << "Response recv <---------------" <<  endl;
         //add tag and len for response
         char tag = 0x30;
         string tag_data(1, tag);

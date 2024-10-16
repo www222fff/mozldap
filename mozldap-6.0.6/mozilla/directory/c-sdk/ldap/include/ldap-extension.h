@@ -375,10 +375,6 @@ LDAP_API(void) LDAP_CALL ldap_set_rebind_proc( LDAP *ld,
         LDAP_REBINDPROC_CALLBACK *rebindproc, void *arg );
 
 /*
- * ber callback function (an API extension)
- */     
-typedef void (LDAP_CALL LDAP_CALLBACK LDAP_DUMP_BER_CALLBACK)(Sockbuf *sb, char *ber, int ber_len, int is_request, char* len_content, int len_content_len); /* dannyaw */
-/*
  * Thread function callbacks (an API extension --
  * LDAP_API_FEATURE_X_THREAD_FUNCTIONS).
  */
@@ -728,6 +724,13 @@ extern int              *module_ldap_debug;
 typedef void (*set_debug_level_fn_t)(int*);
 #endif
 
+/*
+ * ber callback function (an API extension) dannyaw
+ */     
+typedef void (LDAP_CALL LDAP_CALLBACK LDAP_DUMP_BER_CALLBACK)(Sockbuf *sb, char *ber, int ber_len, int is_request, char* len_content, int len_content_len);
+#define LDAP_OPT_DUMP_BER_FN              0x6F    /* - API extension*/
+
+
 #ifdef LDAP_DNS
 #define LDAP_OPT_DNS                    0x0C    /* 12 - API extension */
 #endif
@@ -846,8 +849,6 @@ LDAP_API(int) LDAP_CALL ldap_parse_passwd( LDAP *ld, LDAPMessage *result,
  */
 LDAP_API(LDAPMessage *) LDAP_CALL ldap_delete_result_entry( LDAPMessage **list, LDAPMessage *e );
 LDAP_API(void) LDAP_CALL ldap_add_result_entry( LDAPMessage **list, LDAPMessage *e );
-
-#define LDAP_OPT_DUMP_BER_FN              0x99    /* - API extension dannyaw*/
 
 #ifdef __cplusplus
 }
