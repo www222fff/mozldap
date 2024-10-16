@@ -186,7 +186,7 @@ ldap_set_option( LDAP *ld, int option, const void *optdata )
 		ld->ld_rebind_arg = (void *) optdata;
 		break;
 
-	/*dannyaw*/
+	/*danny test*/
 	case LDAP_OPT_DUMP_BER_FN: 
 		ld->ld_dumpber_callback = (LDAP_DUMP_BER_CALLBACK *) optdata;
 		break;

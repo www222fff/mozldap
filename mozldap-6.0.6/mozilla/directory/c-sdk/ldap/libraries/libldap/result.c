@@ -607,7 +607,7 @@ read1msg( LDAP *ld, int msgid, int all, Sockbuf *sb, LDAPConn **lcp,
 	ber = lc->lconn_ber;
 	lc->lconn_ber = NULLBER;
 
-	/* dannyaw */        	
+	/* danny test */        	
 	if ( NULL != ld->ld_dumpber_callback ) {
 		(*ld->ld_dumpber_callback)( sb, ber->ber_buf, ber->ber_end - ber->ber_buf, 0, &ber->ber_len_contents[0], ber->ber_struct[BER_STRUCT_LEN].ldapiov_len);
 	}

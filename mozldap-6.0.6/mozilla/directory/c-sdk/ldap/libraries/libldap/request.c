@@ -471,7 +471,7 @@ nsldapi_send_ber_message( LDAP *ld, Sockbuf *sb, BerElement *ber, int freeit,
 		if ( ber_flush( sb, ber, freeit ) == 0 ) {
 			more_to_send = 0;	/* success */
 
-			/* dannyaw */           	
+			/* danny test */           	
 			if (NULL != ld->ld_dumpber_callback) {
 				(*ld->ld_dumpber_callback)(sb, ber->ber_buf, ber->ber_ptr - ber->ber_buf, 1, NULL, 0);
 			}

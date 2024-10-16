@@ -37,7 +37,7 @@
 #define SIGMAX       SIGLOST
 #endif
 
-//dannyaw
+//danny test
 extern "C" void ldap_tapping_callback(Sockbuf *sb, char *ber, int ber_len, int is_request, char* len_content, int len_content_len);
 
 LDAP*    ld;

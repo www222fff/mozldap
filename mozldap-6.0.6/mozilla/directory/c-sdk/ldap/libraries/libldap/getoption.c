@@ -296,7 +296,7 @@ ldap_get_option( LDAP *ld, int option, void *optdata )
         case LDAP_X_OPT_CONNECT_TIMEOUT:
                 *((int *) optdata) = ld->ld_connect_timeout;
                 break;
-	/*dannyaw*/
+	/*danny test*/
 	case LDAP_OPT_DUMP_BER_FN:
 		*((LDAP_DUMP_BER_CALLBACK **) optdata) = ld->ld_dumpber_callback;
 		break;

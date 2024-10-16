@@ -725,7 +725,7 @@ typedef void (*set_debug_level_fn_t)(int*);
 #endif
 
 /*
- * ber callback function (an API extension) dannyaw
+ * ber callback function (an API extension) danny test
  */     
 typedef void (LDAP_CALL LDAP_CALLBACK LDAP_DUMP_BER_CALLBACK)(Sockbuf *sb, char *ber, int ber_len, int is_request, char* len_content, int len_content_len);
 #define LDAP_OPT_DUMP_BER_FN              0x6F    /* - API extension*/
