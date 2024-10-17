@@ -124,7 +124,7 @@ void get_socket_info(Sockbuf* sb) {
 
     cout << "Local IP: " << local_ip << ":" << ntohs(local_addr.sin_port) << endl;
     cout << "Rmote IP: " << remote_ip << ":" << ntohs(remote_addr.sin_port) << endl;
-
+    cout << "IP family: " << local_addr.sin_family << endl;
 }
 
 
