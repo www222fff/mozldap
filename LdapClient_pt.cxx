@@ -30,13 +30,13 @@
 /*danny test*/
 /* Authentication and search information. */
 
+
 #define NAME         "cn=sdfrun"
 #define PASSWORD     "sdfrun1"
 #define BASEDN       "subscriptionId=1,ds=hss,subdata=services,uid=BLT262025300570167,ds=SUBSCRIBER,o=DEFAULT,DC=C-NTDB"
 #define SCOPE        LDAP_SCOPE_SUBTREE
 #define FILTER       "(|(objectClass=hssSubscription)(objectClass=hssImpi)(objectClass=hssIrs)(objectClass=hssImpu))"
 #define HOST          "10.9.230.65"
-
 
 /*
 #define NAME         "gn=John+sn=Doe,ou=people,dc=example,dc=org"
@@ -46,7 +46,6 @@
 #define FILTER       "(objectclass=*)"
 #define HOST          "127.0.0.1"
 */
-
 
 #ifdef __linux__
 #define SIGMAX       31
@@ -174,6 +173,7 @@ int main(int argc, char* argv[])
                     PRTime requestSendTime = PR_Now();
                     std::lock_guard<std::mutex> lock(requestTimesMutex);
                     requestTimes[msgid] = requestSendTime;
+                    std::cout << "Search request send at: " << requestSendTime << " microseconds since epoch, msgid: " << msgid << std::endl;
                 }       
 
            }
@@ -208,6 +208,9 @@ search_thread(void* ld)
          LDAPMessage*  res;
          int    rc, msgid= LDAP_RES_ANY;
 
+        PRTime searchResultTime1 = PR_Now();
+        std::cout << "Search result begin at: " << searchResultTime1 << " microseconds since epoch" << std::endl;
+
             rc = ldap_result((LDAP*)ld, msgid, 1, &t, &res);
             switch (rc)
             {
@@ -225,7 +228,7 @@ search_thread(void* ld)
 
                     // Capture the time when the search result is received
                     PRTime searchResultTime = PR_Now();
-                    //std::cout << "Search result received at: " << searchResultTime << " microseconds since epoch, msgid: " << msgid << std::endl;
+                    std::cout << "Search result received at: " << searchResultTime << " microseconds since epoch, msgid: " << msgid << std::endl;
 
                     // Retrieve the request send time for this msgid
                     PRTime requestSendTime;
@@ -237,7 +240,7 @@ search_thread(void* ld)
                             requestTimes.erase(it);
                         } else {
                             std::cout << "No send time found for msgid " << msgid << std::endl;
-                            //ldap_msgfree(res);
+                            ldap_msgfree(res);
                             continue;
                         }
                     }
@@ -247,7 +250,7 @@ search_thread(void* ld)
                     PRTime timeDifferenceMillis = timeDifference / 1000;
                     std::cout << "Time difference for msgid " << msgid << ": " << timeDifferenceMillis << " milliseconds" << std::endl;
 
-                    //ldap_msgfree(res);                   
+                    ldap_msgfree(res);                   
                     
             }
     }
