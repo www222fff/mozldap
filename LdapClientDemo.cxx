@@ -153,15 +153,12 @@ void ldap_tapping_callback(Sockbuf *sb, char *ber, int ber_len, int is_request, 
 
 
 static void*
-search_thread(void* id)
+search_thread(void* ld)
 {
     LDAPMessage*  res;
     void*    tsd;
     timeval  t;
     t.tv_sec = t.tv_usec = 2L;
-
-    printf("Starting search_thread %c.\n", *(char*)id);
-    free(id);
 
     for (;;)
     {
@@ -169,7 +166,7 @@ search_thread(void* id)
          LDAPMessage*  res;
          int    rc, msgid= LDAP_RES_ANY;
 
-            rc = ldap_result(ld, msgid, 1, &t, &res);
+            rc = ldap_result((LDAP *)ld, msgid, 1, &t, &res);
             switch (rc)
             {
                 case -1:
