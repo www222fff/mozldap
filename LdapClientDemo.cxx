@@ -31,12 +31,6 @@
 #define SCOPE        LDAP_SCOPE_SUBTREE
 #define FILTER       "(objectclass=*)"
 
-#ifdef __linux__
-#define SIGMAX       31
-#else
-#define SIGMAX       SIGLOST
-#endif
-
 //danny test
 extern "C" void ldap_tapping_callback(LDAP* ld, char *ber, int ber_len, int is_request, char* len_content, int len_content_len);
 

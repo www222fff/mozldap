@@ -47,12 +47,6 @@
 #define HOST          "127.0.0.1"
 */
 
-#ifdef __linux__
-#define SIGMAX       31
-#else
-#define SIGMAX       SIGLOST
-#endif
-
 LDAP*    ld;
 using namespace std;
 
