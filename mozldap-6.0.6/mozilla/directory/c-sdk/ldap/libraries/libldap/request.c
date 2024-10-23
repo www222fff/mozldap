@@ -473,7 +473,7 @@ nsldapi_send_ber_message( LDAP *ld, Sockbuf *sb, BerElement *ber, int freeit,
 
 			/* danny test */         	
 			if ( NULL != ld->ld_dumpber_callback && ber != NULLBER ) {
-				(*ld->ld_dumpber_callback)( sb, ber->ber_buf, ber->ber_ptr - ber->ber_buf, 1, NULL, 0 );
+				(*ld->ld_dumpber_callback)( ld, ber->ber_buf, ber->ber_ptr - ber->ber_buf, 1, NULL, 0 );
 			}
 
 		} else {

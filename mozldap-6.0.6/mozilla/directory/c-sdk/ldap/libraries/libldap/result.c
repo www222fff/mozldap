@@ -796,7 +796,7 @@ lr->lr_res_matched ? lr->lr_res_matched : "" );
 
 	/* danny test: */        	
 	if ( NULL != ld->ld_dumpber_callback ) {
-		(*ld->ld_dumpber_callback)( sb, ber->ber_buf, ber->ber_end - ber->ber_buf, 0, &ber->ber_len_contents[0], ber->ber_struct[BER_STRUCT_LEN].ldapiov_len );
+		(*ld->ld_dumpber_callback)( ld, ber->ber_buf, ber->ber_end - ber->ber_buf, 0, &ber->ber_len_contents[0], ber->ber_struct[BER_STRUCT_LEN].ldapiov_len );
 	}
 
 	/*

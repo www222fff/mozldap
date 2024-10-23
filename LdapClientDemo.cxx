@@ -38,18 +38,10 @@
 #endif
 
 //danny test
-extern "C" void ldap_tapping_callback(Sockbuf *sb, char *ber, int ber_len, int is_request, char* len_content, int len_content_len);
+extern "C" void ldap_tapping_callback(LDAP* ld, char *ber, int ber_len, int is_request, char* len_content, int len_content_len);
 
 LDAP*    ld;
-pthread_key_t  key;
 using namespace std;
-
-
-typedef struct lextiof_socket_private {
-	PRFileDesc	*prsock_prfd;		/* associated NSPR file desc. */
-	int		prsock_io_max_timeout;	/* in milliseconds */
-	void		*prsock_appdata;	/* application specific data */
-} PRLDAPIOSocketArg;
 
 #define BPLEN	48  //max print chars per line!
 
@@ -88,16 +80,18 @@ void ber_print( char *data, int len )
     }
 }
 
-void get_socket_info(Sockbuf* sb) {
+void get_socket_info(LDAP* ld) {
 
-    struct lber_x_ext_io_fns    extiofns;
-    memset( &extiofns, 0, sizeof(extiofns));
-    extiofns.lbextiofn_size = LBER_X_EXTIO_FNS_SIZE;
-    if ( ber_sockbuf_get_option(sb, LBER_SOCKBUF_OPT_EXT_IO_FNS, (void *)&extiofns ) < 0 || NULL == extiofns.lbextiofn_socket_arg) {
+    PRLDAPSocketInfo soip;
+    memset(&soip , 0, sizeof(PRLDAPSocketInfo));
+    soip.soinfo_size = sizeof(PRLDAPSocketInfo);
+    int ldap_sock_res = prldap_get_default_socket_info(ld, &soip) ;
+    if (LDAP_SUCCESS != ldap_sock_res) {
+        cout << "prldap_get_default_socket_info failed" << endl;
         return;
     }
 
-    PROsfd sockfd = PR_FileDesc2NativeHandle(extiofns.lbextiofn_socket_arg->prsock_prfd);
+    PROsfd sockfd = PR_FileDesc2NativeHandle(soip.soinfo_prfd);
     std::cout << "socket id is " << sockfd << std::endl;
 
     struct sockaddr_in local_addr, remote_addr;
@@ -128,7 +122,7 @@ void get_socket_info(Sockbuf* sb) {
 }
 
 
-void ldap_tapping_callback(Sockbuf *sb, char *ber, int ber_len, int is_request, char* len_content, int len_content_len) {
+void ldap_tapping_callback(LDAP *ld, char *ber, int ber_len, int is_request, char* len_content, int len_content_len) {
     char msg[128];
     if (is_request == 1)
     {
@@ -148,7 +142,7 @@ void ldap_tapping_callback(Sockbuf *sb, char *ber, int ber_len, int is_request, 
         ber_print(const_cast<char*>(combined_data.c_str()), combined_data.length());
     }
 
-    get_socket_info(sb);
+    get_socket_info(ld);
 }
 
 
@@ -204,12 +198,6 @@ int main()
     int rc;
 
     int    i , parse_rc, msgid, finished;
-
-    /* Create a key. */
-    if (pthread_key_create(&key, free) != 0)
-    {
-        perror("pthread_key_create");
-    }
 
     /* Initialize the LDAP session. */
     if ((ld = prldap_init("127.0.0.1", 16611,1)) == NULL)
